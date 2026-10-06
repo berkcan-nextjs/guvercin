@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Güvercin</title>
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;height:100dvh;overflow:hidden;-webkit-tap-highlight-color:transparent;overscroll-behavior:none;font-family:"Segoe UI",system-ui,sans-serif}
+  body{background:linear-gradient(180deg,#5aa9f0 0%,#a6d8ff 55%,#fff1d6 100%);transition:background 2s}
+  body.fly{background:linear-gradient(180deg,#3b8fe6 0%,#8fd0ff 55%,#ffe2b8 100%)}
+
+  .sun{position:absolute;top:8%;right:8%;width:clamp(70px,20vw,110px);height:clamp(70px,20vw,110px);border-radius:50%;
+    background:radial-gradient(#fff9c4,#ffe066 60%,#ffd43b);box-shadow:0 0 80px 30px #fff3a8aa;animation:pulse 4s ease-in-out infinite}
+  @keyframes pulse{50%{transform:scale(1.08);box-shadow:0 0 110px 45px #fff3a8aa}}
+
+  .cloud{position:absolute;left:-250px;background:#fff;border-radius:100px;opacity:.9;animation:drift linear infinite}
+  .cloud::before,.cloud::after{content:"";position:absolute;background:#fff;border-radius:50%}
+  .cloud::before{width:50%;height:140%;top:-70%;left:15%}
+  .cloud::after{width:35%;height:110%;top:-45%;left:50%}
+  @keyframes drift{to{transform:translateX(calc(100vw + 500px))}}
+
+  #stage{position:absolute;left:50%;top:50%;--sz:min(300px,78vw);width:var(--sz);height:var(--sz);margin:calc(var(--sz)/-2) 0 0 calc(var(--sz)/-2);cursor:pointer;touch-action:manipulation;
+    animation:float 3s ease-in-out infinite;filter:drop-shadow(0 20px 20px #0003)}
+  @keyframes float{50%{transform:translateY(-18px) rotate(1.5deg)}}
+  #stage:hover #dove{transform:scale(1.06)}
+  #dove{width:100%;height:100%;transition:transform .3s;overflow:visible}
+  .wing{transform-origin:118px 130px;animation:idle 2.4s ease-in-out infinite}
+  @keyframes idle{50%{transform:rotate(-8deg)}}
+  .head{transform-origin:200px 120px;animation:nod 3s ease-in-out infinite}
+  @keyframes nod{40%,60%{transform:rotate(6deg)}}
+  .eye{animation:blink 4s infinite;transform-origin:206px 108px}
+  @keyframes blink{94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
+
+  /* uçuş */
+  #stage.fly{animation:takeoff 3.4s cubic-bezier(.5,-.3,.7,.4) forwards;cursor:default}
+  #stage.fly .wing{animation:flap .16s ease-in-out infinite alternate}
+  #stage.fly .head{animation:none}
+  @keyframes flap{from{transform:rotate(18deg)}to{transform:rotate(-50deg)}}
+  @keyframes takeoff{
+    0%{transform:translate(0,0) scale(1) rotate(0)}
+    15%{transform:translate(-30px,25px) scale(.95) rotate(8deg)}
+    45%{transform:translate(30vw,-25vh) scale(.8) rotate(-14deg)}
+    100%{transform:translate(85vw,-85vh) scale(.12) rotate(-22deg);opacity:0}
+  }
+
+  .feather{position:absolute;width:18px;height:40px;background:linear-gradient(#fff,#cfe3f5);border-radius:50% 50% 50% 50%/80% 80% 20% 20%;
+    box-shadow:0 0 6px #0002;pointer-events:none;animation:fall var(--t) ease-in forwards}
+  @keyframes fall{to{transform:translate(var(--x),110vh) rotate(var(--r));opacity:0}}
+
+  .ring{position:absolute;border:3px solid #fff;border-radius:50%;pointer-events:none;animation:ring 1s ease-out forwards}
+  @keyframes ring{from{width:0;height:0;opacity:.9}to{width:420px;height:420px;margin:-210px 0 0 -210px;opacity:0}}
+
+  #note{position:fixed;left:50%;top:50%;padding:26px 46px;background:#fffbe0;color:#3a2d12;
+    font:700 clamp(26px,5vw,48px) "Comic Sans MS","Segoe Print",cursive;border-radius:8px;
+    box-shadow:0 20px 50px #0004,inset 0 0 0 2px #f0e3a3;opacity:0;transform:translate(-50%,-50%) scale(0) rotate(-20deg);width:max-content;max-width:88vw;text-align:center;padding-left:6vw;padding-right:6vw}
+  #note::before{content:"";position:absolute;top:-14px;left:50%;width:70px;height:26px;margin-left:-35px;background:#ff8fa388;transform:rotate(-4deg)}
+  #note.show{animation:pop 1s 1.6s cubic-bezier(.2,1.6,.4,1) forwards,wobble 3s 2.6s ease-in-out infinite}
+  @keyframes pop{to{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(-3deg)}}
+  @keyframes wobble{50%{transform:translate(-50%,-54%) scale(1.03) rotate(2deg)}}
+  #note span{display:inline-block;animation:beat 1s infinite}
+  @keyframes beat{50%{transform:scale(1.35)}}
+
+  @media (max-width:480px){#note{padding:20px 24px}.ring{display:none}}
+  @media (hover:none){#stage:hover #dove{transform:none}}
+  .heart{position:absolute;pointer-events:none;line-height:1;transform:translate(-50%,-50%);
+    filter:drop-shadow(0 0 6px #ff4d8d88);animation:heart 1.6s ease-out forwards}
+  @keyframes heart{0%{transform:translate(-50%,-50%) scale(0) rotate(0);opacity:1}
+    25%{transform:translate(-50%,-50%) scale(1.2) rotate(var(--rot))}
+    100%{transform:translate(calc(-50% + var(--dx)),calc(-50% + 70px)) scale(.7) rotate(var(--rot));opacity:0}}
+  #hint{position:fixed;bottom:28px;width:100%;text-align:center;color:#fff;font-size:18px;letter-spacing:1px;
+    text-shadow:0 2px 8px #0005;animation:hint 1.6s ease-in-out infinite}
+  @keyframes hint{50%{transform:translateY(-8px);opacity:.6}}
+</style>
+</head>
+<body>
+<div class="sun"></div>
+<div class="cloud" style="top:12%;width:180px;height:50px;animation-duration:60s"></div>
+<div class="cloud" style="top:30%;width:130px;height:38px;animation-duration:45s;animation-delay:-20s"></div>
+<div class="cloud" style="top:70%;width:220px;height:60px;animation-duration:80s;animation-delay:-40s"></div>
+<div class="cloud" style="top:55%;width:100px;height:30px;animation-duration:35s;animation-delay:-8s"></div>
+
+<div id="stage">
+<svg id="dove" viewBox="0 0 300 300">
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#d6e4f2"/></linearGradient>
+    <linearGradient id="wg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f4f9ff"/><stop offset="1" stop-color="#b7cfe6"/></linearGradient>
+  </defs>
+  <path d="M82 170 L20 150 Q30 175 15 200 L85 195 Z" fill="url(#wg)" stroke="#9db6cc" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M25 160 L85 178 M22 180 L85 188" stroke="#9db6cc" stroke-width="2" fill="none"/>
+  <ellipse cx="150" cy="170" rx="85" ry="52" fill="url(#body)" stroke="#9db6cc" stroke-width="3"/>
+  <ellipse cx="170" cy="190" rx="50" ry="25" fill="#fff" opacity=".7"/>
+  <path d="M135 215 v28 M165 215 v28 M122 246 h28 M152 246 h28" stroke="#ff9f43" stroke-width="5" stroke-linecap="round"/>
+  <g class="head">
+    <circle cx="200" cy="115" r="35" fill="url(#body)" stroke="#9db6cc" stroke-width="3"/>
+    <path d="M232 108 L262 118 L232 128 Q238 118 232 108Z" fill="#ffa94d" stroke="#e8890c" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="218" cy="102" r="6" fill="#ffb3c1" opacity=".7"/>
+    <g class="eye"><circle cx="212" cy="108" r="6.5" fill="#222"/><circle cx="214" cy="106" r="2" fill="#fff"/></g>
+  </g>
+  <g class="wing">
+    <path d="M125 135 Q60 40 15 70 Q-5 90 20 100 Q5 115 35 120 Q25 135 55 140 Q60 160 120 190 Z" fill="url(#wg)" stroke="#9db6cc" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M40 90 Q80 110 115 150 M35 112 Q75 125 110 165" stroke="#9db6cc" stroke-width="2" fill="none"/>
+  </g>
+</svg>
+</div>
+
+<div id="note">Tanışalım mı? <span>🕊️</span></div>
+<div id="hint">✨ Güvercine tıkla ✨</div>
+
+<script>
+  const s=document.getElementById('stage'),n=document.getElementById('note');
+
+  // Web Audio ile üretilen sesler (dosya gerekmez)
+  let ac;
+  const A=()=>ac||(ac=new (window.AudioContext||window.webkitAudioContext)());
+  function tone(f0,f1,t,dur,vol,type='sine',vib=0){
+    const a=A(),o=a.createOscillator(),g=a.createGain(),T=a.currentTime+t;
+    o.type=type;o.frequency.setValueAtTime(f0,T);o.frequency.exponentialRampToValueAtTime(f1,T+dur);
+    if(vib){const l=a.createOscillator(),lg=a.createGain();l.frequency.value=vib;lg.gain.value=18;l.connect(lg).connect(o.frequency);l.start(T);l.stop(T+dur)}
+    g.gain.setValueAtTime(0,T);g.gain.linearRampToValueAtTime(vol,T+dur*.2);g.gain.exponentialRampToValueAtTime(.001,T+dur);
+    o.connect(g).connect(a.destination);o.start(T);o.stop(T+dur);
+  }
+  const coo=(t=0)=>{tone(380,300,t,.28,.25,'sine',28);tone(330,260,t+.3,.35,.25,'sine',28);tone(400,310,t+.75,.4,.22,'sine',28)};
+  function flap(t){
+    const a=A(),len=.09,b=a.createBuffer(1,a.sampleRate*len,a.sampleRate),d=b.getChannelData(0);
+    for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2);
+    const src=a.createBufferSource(),f=a.createBiquadFilter(),g=a.createGain();
+    src.buffer=b;f.type='bandpass';f.frequency.value=900;g.gain.value=.5;
+    src.connect(f).connect(g).connect(a.destination);src.start(a.currentTime+t);
+  }
+  const chime=t=>[660,880,1320].forEach((f,i)=>tone(f,f,t+i*.1,.5,.15,'triangle'));
+  let lastHover=0;
+  s.addEventListener('mouseenter',()=>{if(s.classList.contains('fly')||Date.now()-lastHover<2500)return;lastHover=Date.now();try{coo()}catch(e){}});
+
+  s.addEventListener('click',()=>{
+    if(s.classList.contains('fly'))return;
+    try{
+      A().resume();
+      tone(300,700,0,.25,.3,'sine',20);               // cıvıltı
+      for(let i=0;i<22;i++)flap(.2+i*(.16-i*.004));   // kanat çırpma, yavaşça seyrekleşir
+      chime(1.6);                                     // not belirirken
+    }catch(e){}
+    s.classList.add('fly');document.body.classList.add('fly');n.classList.add('show');
+    document.getElementById('hint').remove();
+    const t0=performance.now();
+    (function trail(){
+      const q=s.getBoundingClientRect(),el=performance.now()-t0;
+      if(el>3300)return;
+      const x=q.left+q.width*.25,y=q.top+q.height*.55,k=Math.max(q.width/(parseFloat(getComputedStyle(s).width)||1),.1);
+      for(let n=0;n<3;n++){const h=document.createElement('div');h.className='heart';
+      h.textContent=['❤️','💖','💗','💕','🩷'][Math.random()*5|0];
+      h.style.cssText=`left:${x+(Math.random()-.5)*20}px;top:${y+(Math.random()-.5)*20}px;font-size:${(18+Math.random()*18)*Math.max(k,.5)}px;--dx:${Math.random()*80-40}px;--rot:${Math.random()*60-30}deg`;
+      document.body.appendChild(h);setTimeout(()=>h.remove(),1600);}
+      setTimeout(()=>requestAnimationFrame(trail),16);
+    })();
+    const r=s.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
+    const ring=document.createElement('div');ring.className='ring';ring.style.left=cx+'px';ring.style.top=cy+'px';
+    document.body.appendChild(ring);setTimeout(()=>ring.remove(),1000);
+    let i=0;const id=setInterval(()=>{
+      const f=document.createElement('div');f.className='feather';
+      f.style.left=(cx+(Math.random()-.5)*160)+'px';f.style.top=(cy+(Math.random()-.5)*100)+'px';
+      f.style.setProperty('--x',(Math.random()*300-150)+'px');
+      f.style.setProperty('--r',(Math.random()*720-360)+'deg');
+      f.style.setProperty('--t',(2+Math.random()*2)+'s');
+      document.body.appendChild(f);setTimeout(()=>f.remove(),4200);
+      if(++i>35)clearInterval(id);
+    },70);
+  });
+</script>
+</body>
+</html>
